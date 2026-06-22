@@ -69,6 +69,37 @@ def draw_text8x8_centre(text, colour, background, rotate=0, line=0):
 
     display.draw_text8x8(x, y, text, colour, background, rotate)
 
+resp_high = ["High score, I guess.",
+             "Some may call it impressive.",
+             "Can you top that? Probably not.",
+             "Wow... not bad."
+             ]
+
+resp_low = ["My dog could do better.",
+            "Is it possible to take longer?",
+            "You call THAT an attempt?",
+            "That's embarassing"
+            ]
+
+resp_avg = ["Not great, not terrible.",
+            "Mediocre at best.",
+            "Come on, you can try harder than that.",
+            "It's OK."
+            ]
+
+def analysis(speeds):
+    latest = speeds[-1]
+    if len(speeds) == 1:
+        return resp_avg[randint(0, len(resp_avg) - 1)]
+    if min(speeds) == latest:
+        return resp_high[randint(0, len(resp_high) - 1)]
+    elif max(speeds) == latest:
+        return resp_low[randint(0, len(resp_low) - 1)]
+    else:
+        return resp_avg[randint(0, len(resp_avg) - 1)]
+
+
+speeds = []
 
 display.clear(RED)
 draw_text8x8_centre("PRESS BUTTON TO PLAY", WHITE, RED)
@@ -111,8 +142,11 @@ while True:
 
             # End screen
             display.clear(RED)
+            speeds.append(time_ms)
             draw_text8x8_centre(f"YOU TOOK {time_ms}ms", WHITE, RED)
-            draw_text8x8_centre("PRESS BUTTON TO PLAY AGAIN", WHITE, RED, line=2)
+            draw_text8x8_centre(analysis(speeds), WHITE, RED, line=2)
+            draw_text8x8_centre("PRESS BUTTON TO PLAY AGAIN", WHITE, RED, line=4)
+            
             while btn.value() == 0:
                 sleep_ms(1)
             wait_for_press()
