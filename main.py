@@ -69,35 +69,62 @@ def draw_text8x8_centre(text, colour, background, rotate=0, line=0):
 
     display.draw_text8x8(x, y, text, colour, background, rotate)
 
-resp_high = ["High score, I guess.",
+resp_high = ["Crazy improvement!",
              "Some may call it impressive.",
              "Can you top that? Probably not.",
-             "Wow... not bad."
+             "Wow... not bad.",
+             "You must be cheating."
              ]
 
 resp_low = ["My dog could do better.",
             "Is it possible to take longer?",
             "You call THAT an attempt?",
-            "That's embarassing"
+            "That's embarassing.",
+            "That was so slow!"
             ]
 
-resp_avg = ["Not great, not terrible.",
-            "Mediocre at best.",
-            "Come on, you can try harder than that.",
-            "It's OK."
-            ]
+resp_improve = ["Ok, getting better!",
+                "You're improving!",
+                "That was alright!",
+                "Let's see if you can keep it up."
+                ]
+
+resp_worse = ["A slight decline.",
+              "Going the wrong way.",
+              "Try harder.",
+              "You're getting worse."
+              ]
 
 def analysis(speeds):
     latest = speeds[-1]
     if len(speeds) == 1:
-        return resp_avg[randint(0, len(resp_avg) - 1)]
-    if min(speeds) == latest:
-        return resp_high[randint(0, len(resp_high) - 1)]
-    elif max(speeds) == latest:
-        return resp_low[randint(0, len(resp_low) - 1)]
-    else:
-        return resp_avg[randint(0, len(resp_avg) - 1)]
+        if latest < 215:
+            return "A very strong start!"
+        elif latest < 260:
+            return "Average start."
+        elif latest < 320:
+            return "That was a bad start."
+        else:
+            return "Terrible start!"
+        
+    historical = speeds[:-1:]
 
+    if len(historical) > 3:
+        historical = historical[-3:]
+    hist_avg = sum(historical) / len(historical)
+    print(hist_avg)
+    ratio = latest / hist_avg
+    
+    if ratio < 0.5:
+        return resp_improve[randint(0, len(resp_improve) - 1)]
+    elif ratio < 1:
+        return resp_high[randint(0, len(resp_high) - 1)]
+    elif 0.98 <= ratio <= 1.02:
+        return "Exactly average."
+    elif ratio > 1.5:
+        return resp_worse[randint(0, len(resp_worse) - 1)]
+    elif ratio > 1:
+        return resp_low[randint(0, len(resp_low) - 1)]
 
 speeds = []
 
