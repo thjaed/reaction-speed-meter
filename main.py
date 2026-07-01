@@ -1,4 +1,4 @@
-from machine import Pin, SPI # type: ignore
+from machine import Pin, SPI, PWM # type: ignore
 from ili9341 import Display, color565
 from utime import ticks_us, ticks_ms, ticks_diff, sleep_us, sleep_ms # type: ignore
 from random import randint
@@ -23,11 +23,24 @@ display = Display(
     bgr=False
 )
 
+buzzer = PWM(Pin(6))
+
 RED = color565(255, 0, 0)
 GREEN = color565(0, 255, 0)
 BLUE = color565(0, 0, 255)
 BLACK = color565(0, 0, 0)
 WHITE = color565(255, 255, 255)
+
+def play_tone(freq, duration):
+    buzzer.freq(freq)
+    buzzer.duty_u16(32768)
+    sleep_ms(duration)
+    buzzer.duty_u16(0)
+
+def play_tune(tune):
+    for tone in tune:
+        freq, duration = tone
+        play_tone(freq, duration)
 
 debounce_ms = 20
 btn = Pin(2, Pin.IN, Pin.PULL_UP)
@@ -42,8 +55,6 @@ def wait_for_press():
 
     # confirm still pressed
     if btn.value() == 0:
-        print("Pressed")
-
         # wait for release (prevents double triggers)
         while btn.value() == 0:
             sleep_ms(1)
@@ -95,6 +106,26 @@ resp_worse = ["A slight decline.",
               "You're getting worse."
               ]
 
+tune_highscore = [
+    (700, 100),
+    (1200, 400)
+]
+
+tune_lowscore = [
+    (300, 200),
+    (250, 250),
+    (220, 200),
+    (200, 700)
+]
+
+tune_start = [
+    (500, 200),
+    (250, 200),
+    (150, 200),
+    (300, 200),
+    (700, 200)
+]
+
 def analysis(speeds):
     latest = speeds[-1]
     if len(speeds) == 1:
@@ -112,23 +143,26 @@ def analysis(speeds):
     if len(historical) > 3:
         historical = historical[-3:]
     hist_avg = sum(historical) / len(historical)
-    print(hist_avg)
+    print(f"historical average: {hist_avg}  this score: {latest}")
     ratio = latest / hist_avg
+    print(f"ratio: {ratio}")
+    print("\n")
     
     if ratio < 0.5:
-        return resp_improve[randint(0, len(resp_improve) - 1)]
-    elif ratio < 1:
         return resp_high[randint(0, len(resp_high) - 1)]
+    elif ratio < 1:
+        return resp_improve[randint(0, len(resp_improve) - 1)]
     elif 0.98 <= ratio <= 1.02:
         return "Exactly average."
     elif ratio > 1.5:
-        return resp_worse[randint(0, len(resp_worse) - 1)]
-    elif ratio > 1:
         return resp_low[randint(0, len(resp_low) - 1)]
+    elif ratio > 1:
+        return resp_worse[randint(0, len(resp_worse) - 1)]
 
 speeds = []
 
 display.clear(RED)
+play_tune(tune_start)
 draw_text8x8_centre("PRESS BUTTON TO PLAY", WHITE, RED)
 wait_for_press()
 
@@ -172,7 +206,15 @@ while True:
             speeds.append(time_ms)
             draw_text8x8_centre(f"YOU TOOK {time_ms}ms", WHITE, RED)
             draw_text8x8_centre(analysis(speeds), WHITE, RED, line=2)
-            draw_text8x8_centre("PRESS BUTTON TO PLAY AGAIN", WHITE, RED, line=4)
+
+            if min(speeds) == time_ms and len(speeds) != 1:
+                draw_text8x8_centre("NEW HIGH SCORE", WHITE, RED, line=-3)
+                play_tune(tune_highscore)
+            elif max(speeds) == time_ms and len(speeds) != 1:
+                draw_text8x8_centre("WORST SCORE", WHITE, RED, line=-3)
+                play_tune(tune_lowscore)
+
+            draw_text8x8_centre("PRESS BUTTON TO PLAY AGAIN", WHITE, RED, line=6)
             
             while btn.value() == 0:
                 sleep_ms(1)
