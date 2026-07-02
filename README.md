@@ -1,13 +1,8 @@
 # Judgemental Reaction Speed Meter
 I made a reaction speed meter that analyses your results and judges you with a message based on how good/bad you are doing!
 
-<img src="content/IMG_3816.jpeg" width=300></img>
-
-## Demo Video
-
-<video width="400" controls>
-  <source src="content/demo.mp4" type="video/mp4">
-</video>
+[![Demo Video](content/IMG_3816.jpeg)](content/demo.mp4)
+[Demo Video](content/demo.mp4)
 
 ## Hardware
 - Raspberry Pi Pico
