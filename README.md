@@ -5,7 +5,9 @@ I made a reaction speed meter that analyses your results and judges you with a m
 
 ## Demo Video
 
-<video src="content/demo.mp4" width=400 alt="Demo Video"></video>
+<video width="400" controls>
+  <source src="content/demo.mp4" type="video/mp4">
+</video>
 
 ## Hardware
 - Raspberry Pi Pico
